@@ -1,10 +1,10 @@
 ```yaml
-#tomcat
+#tomcat servelt1
 server:
   tomcat:
     max-threads: 128
     min-spare-threads: 64
-#spring-boot-undertow
+#spring-boot-undertow servelt2
   undertow:
     io-threads: 2
     worker-threads: 16
@@ -13,72 +13,125 @@ server:
     direct-buffers: 512
 ```
 ```yaml
-#zuul
-zuul:
-  host:
-    socket-timeout-millis: 100
-    connect-timeout-millis: 100
-    max-total-connections: 200
-    max-per-route-connections: 20
-  semphore:
-    max-semaphores: 128
-  eureka:
-    [serviceId]:
-      semaphore:
-        max-semaphores: 128
-  routes:
-    customers: /customers/**
-    [serviceId]
-      path:
-      serviceId:
-      strip-prefix:
-      url:
-      sensitive-headers:
-      ignored-headers:
-  prefix:
-  strip-prefix:
-
-```
-```yaml
-#ribbon
-ribbon:
-  eager-load:
-    enabled: true
-  max-auto-retries: 1
-  max-auto-retries-next-server: 1
-  ok-to-retry-on-all-operations: true
-  server-list-refresh-interval: 2000
-  connect-timeout: 3000
-  read-timeout: 3000
-  max-total-http-connections:
-  max-connections-per-host:
-```
-```yaml
-hystrix:
-  command:
-    [CommandKey]:
-      execution:
-        isolation:
-          thread:
-            timeout-in-milliseconds: 1000
-          semaphore:
-            max-concurrent-requests: 100
-          timeout:
-            enabled: true
-          thread:
-            interrupt-on-timeout: true
-            interrupt-on-cancel: false
-          strategy: THREAD
-      fallback:
-        isolation:
-          semaphore:
-            max-concurrent-requests: 10
-        enabled: true
-```
-```yaml
 spring:
+  application:
+    name: hello-service
   cloud:
     loadbalancer:
       retry:
         enabled: true
+	cofig:
+	  server:
+	    git:
+		  uri: http://git.xxxx.net/didispace/
+		  username: qingxiao4@gmail.com
+		  password: a9761008
+		  uri: file://${user.home}/config-repo
+		  search-paths: {application}
+		  basedir:
+		  repos:
+		    dev:
+			  pattern: dev/*
+			  uri: file://home/git/config-repo
+			test: http://git.xxx.xxx/test/config-repo
+			prod:
+			  pattern: prod/pp*,online/oo*
+			  uri: http://git.xxx,xxx/prod/config-repo
+		svn:
+		  uri: svn://localhost:443/xxx/cofig-repo
+		  username: qingxiao4@gmail.com
+		  password: a9761008
+		  basedir:
+		health:
+		  repositories:
+		    check:
+			  name: check-repo
+			  label: master
+			  profile: default
+		overrides:
+		  name: moon
+		  from: shanghai
+  datasource:
+    username: moon
+	password: {cipher}dba6505baa81d7808799d4429de499bf4c2053c05f029e7cfbf143695f5b
+feign:
+  compression:
+    request:
+	  enabled: true
+	  mime-types: text/xml,application/xml,application/json
+	  min-request-size: 2048
+	response:
+	  enabled: true
+encrypy:
+  key: fifispaces
+  key-store:
+    alias: config-server
+	password: 111111
+    secret: 222222
+	location: config-server
+```
+```yaml
+#自定參數
+book.name=SpeingCloudInAction
+#@Value("${book.name}")
+#random
+blog.value=${random.value}
+blog.number=${random.int}
+blog.bignumber=${random.long}
+blog.test1=${random.int(10)}
+blog.test2=${random.int(10,20)}
+```
+```bash
+java -jar xxx.jar --spring.profiles.active=test
+java -jar xxx.jar --spring.profiles.active=prod
+```
+```yaml
+#actuator
+/autoconfig
+/beans
+/configprops
+/env
+/mappings
+/info
+/metrics
+/health
+/dump
+/trace
+/shutdown
+/refresh
+```
+```
+@RestController
+public class ConsumerController {
+	@Autowired
+	RestTemplate restTemplate;
+	
+	@RequestMapping(value = "/ribbon-comsumer",method = RequestMethod.GET)
+	public String helloConsumer(){
+		return restTemplate.getForEntity("http://hello-service/hello",String.class).getBody();
+	}
+}
+```
+```yaml
+#zuul filter
+ServletDetectionFilter ^-3
+Servlet30WrapperFilter ^-2
+FormBodyWrapperFilter ^-1
+DebugFilter ^1
+PreDecorationFilter ^5
+#zuul route
+RibbonRoutingFilter ^10
+SimpleHostRoutingFilter ^100
+SendForwardFilter ^500
+#zuul post
+SendErrorFilter ^0
+SendResponseFilter ^1000
+```
+```
+#config
+/{application}/{profile}[/{label}]
+/{application}-{profile}.yml
+/{label}/{application}-{profile}
+/{application}-{profile}.properties
+/{label}/{application}-{profile}.properties
 ```
