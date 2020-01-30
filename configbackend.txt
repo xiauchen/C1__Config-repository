@@ -1,0 +1,7 @@
+config:
+File System Backend
+Vault Backend
+Accessing Backends Through a Proxy
+Sharing Configuration With All Applications （Vault Server , File Based Repositories）
+JDBC Backend
+CredHub Backend
